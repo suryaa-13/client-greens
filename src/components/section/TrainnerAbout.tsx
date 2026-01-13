@@ -212,15 +212,9 @@ const TrainnerAbout: React.FC = () => {
                 />
               </AnimatePresence>
             ) : (
-            ): (
-                <motion.img
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop"
-            className="absolute inset-0 w-full h-full object-cover"
-            variants={imageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-                />
+              <div className="flex items-center justify-center h-full text-gray-400">
+                Image coming soon
+              </div>
             )}
           </motion.div>
 
