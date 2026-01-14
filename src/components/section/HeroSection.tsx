@@ -6,7 +6,7 @@ import { safeGet } from "../../util/safeGet";
 import LoadingPage from "../LoadingPage";
 import logo from "../../assets/Greens.png";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL =import.meta.env.VITE_API_BASE_URL;
 
 const COLORS = {
   darkGreen: "#01311F",
@@ -44,6 +44,7 @@ const HeroSection: React.FC = () => {
     fetchHero();
     return () => { mounted = false; };
   }, [parsedDomainId, parsedCourseId]);
+console.log("hero",heroData);
 
   // useEffect(() => {
   //   if (isLandingPage) safeGet<any[]>(`${API_BASE_URL}/api/domain`).then(setDomains);
@@ -104,8 +105,11 @@ const HeroSection: React.FC = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${API_BASE_URL}${heroData?.images[current]})` }}
-          >
+style={{
+  backgroundImage: heroData?.images?.[current]
+    ? `url(${API_BASE_URL}${heroData.images[current]})`
+    : "none",
+}}          >
             {/* Multi-layered Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#01311F]/90 via-[#01311F]/60 to-transparent" />
             <div className="absolute inset-0 bg-black/20" />
@@ -126,7 +130,7 @@ const HeroSection: React.FC = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-[1.1] mb-6 drop-shadow-2xl">
-              {heroData.title.split(' ').map((word: string, i: number) => (
+              {heroData?.title?.split(' ').map((word: string, i: number) => (
                 <span key={i} className={i === 1 ? "text-[#B99A49]" : ""}>{word} </span>
               ))}
             </h1>
@@ -138,7 +142,7 @@ const HeroSection: React.FC = () => {
             {/* 4. DYNAMIC BUTTON GRID */}
             <div className="flex flex-wrap gap-4">
               {isLandingPage && (
-                <div className="relative flex items-center justify-center h-20 w-20">
+                <div className="relative flex items-center justify-center h-20 w-20 my-5">
                   {/* EXPLORE BUTTON */}
                   <motion.button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -200,7 +204,7 @@ const HeroSection: React.FC = () => {
 
         {/* 5. SLIDER INDICATORS */}
         <div className="absolute bottom-10 right-10 z-30 flex gap-3">
-          {heroData.images.map((_: any, i: number) => (
+          {heroData?.images?.map((_: any, i: number) => (
             <div
               key={i}
               className={`h-1 transition-all duration-500 ${current === i ? "w-12 bg-[#B99A49]" : "w-4 bg-white/30"}`}
@@ -213,3 +217,4 @@ const HeroSection: React.FC = () => {
 };
 
 export default HeroSection;
+

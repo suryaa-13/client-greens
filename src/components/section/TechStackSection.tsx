@@ -80,7 +80,7 @@ const TechStackSection: React.FC = () => {
             >
               <motion.img
                 animate={floatAnimation}
-                src={`http://localhost:5000${tech.iconUrl}`}
+                src={`${API_BASE_URL}${tech.iconUrl}`}
                 alt={tech.name}
                 className="w-20 h-20 mx-auto mb-6 object-contain"
               />

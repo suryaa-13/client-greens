@@ -23,18 +23,8 @@ interface Testimonial {
   batch: string;
   image: string;
   quote: string;
-  videoUrl: string;
 }
 
-/* ---------------- HELPERS ---------------- */
-const getEmbedSource = (url: string) => {
-  const regex =
-    /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|v\/|embed\/|shorts\/))([^&\n?#]+)/;
-  const match = url.match(regex);
-  return match
-    ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`
-    : url;
-};
 
 /* ---------------- ANIMATION ---------------- */
 const carouselVariants = (direction: number): Variants => ({
@@ -146,15 +136,6 @@ const TestimonialsSection: React.FC = () => {
     page * visibleCards + visibleCards
   );
 
-  const getAspect = () =>
-    selectedTestimonial?.videoUrl.includes("shorts")
-      ? "aspect-[9/16]"
-      : "aspect-video";
-
-  const getMaxWidth = () =>
-    selectedTestimonial?.videoUrl.includes("shorts")
-      ? "max-w-xs md:max-w-sm"
-      : "max-w-lg md:max-w-3xl";
 
   /* ---------------- UI ---------------- */
   return (
@@ -205,7 +186,7 @@ const TestimonialsSection: React.FC = () => {
                     <img
                       src={`${API_BASE_URL}${t.image}`}
                       alt={t.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = noImage;
@@ -250,28 +231,7 @@ const TestimonialsSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Video Modal */}
-        <AnimatePresence>
-          {selectedTestimonial && (
-            <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-              onClick={() => setSelectedId(null)}
-            >
-              <motion.div
-                className={`relative w-full ${getMaxWidth()} ${getAspect()} bg-black rounded-xl`}
-                onClick={e => e.stopPropagation()}
-              >
-                <iframe
-                  src={getEmbedSource(selectedTestimonial.videoUrl)}
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+    
       </div>
     </section>
   );

@@ -24,10 +24,10 @@ interface Material {
   id: number;
   fileName: string;
   description: string;
-  fileType: "PDF" | "DOCX" | "VIDEO" | "PRESENTATION" | "EBOOK";
+  fileType: "PDF" | "DOCX" | "VIDEO" | "PRESENTATION" ;
   highlight: string;
   filePath: string;
-  thumbnailPath?: string | null;
+  imageUrl?: string | null;
 }
 
 /* ---------------- ICON ---------------- */
@@ -117,9 +117,9 @@ const StudyMaterialSection: React.FC = () => {
                 className="cursor-pointer rounded-2xl overflow-hidden shadow-2xl bg-black"
               >
                 {/* THUMBNAIL */}
-                {m.thumbnailPath ? (
+                {m.imageUrl ? (
                   <img
-                    src={`${API_BASE_URL}${m.thumbnailPath}`}
+                    src={`${API_BASE_URL}${m.imageUrl}`}
                     alt={m.fileName}
                     className="w-full h-[350px] object-cover"
                   />
@@ -248,3 +248,5 @@ const StudyMaterialSection: React.FC = () => {
 };
 
 export default StudyMaterialSection;
+
+

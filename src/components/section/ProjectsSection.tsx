@@ -1,6 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { usePageContext } from "../../context/usePageContext";
 
@@ -26,56 +27,65 @@ interface Project {
   title: string;
   description: string;
   imageUrl: string;
+  projectLink:string;
   tech?: ProjectTech[]; // ✅ backend sends `tech`
 }
 
-/* ---------------- CARD ---------------- */
-const ProjectCard: React.FC<{ project: Project }> = ({ project }) => (
-  <div className="h-full bg-white rounded-2xl overflow-hidden shadow-lg flex flex-col group cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-    
-    {/* Image */}
-    <div className="h-48 overflow-hidden">
-      <img
-        src={`${API_BASE_URL}${project.imageUrl}`}
-        alt={project.title}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        onError={(e) => (e.currentTarget.src = "/no-image.png")}
-      />
-    </div>
+//   Project card
+const ProjectCard: React.FC<{ project: Project }> = ({ project }) => {
+  const navigate = useNavigate(); // ✅ hook inside component
 
-    {/* Content */}
-    <div className="p-6 flex-1 flex flex-col">
-      <h3
-        className="text-xl font-bold mb-3"
-        style={{ color: COLORS.darkGreen }}
+  return (
+    <div className="h-full bg-white rounded-2xl overflow-hidden shadow-lg flex flex-col group cursor-pointer hover:shadow-2xl hover:-translate-y-2 transition-all duration-300" onClick={() => window.open(project.projectLink, '_blank', 'noopener,noreferrer')}>
+      
+      {/* Image */}
+      <div
+        className="h-48 overflow-hidden"
+
       >
-        {project.title}
-      </h3>
+        <img
+          src={`${API_BASE_URL}${project.imageUrl}`}
+          alt={project.title}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => (e.currentTarget.src = "/no-image.png")}
+        />
+      </div>
 
-      <p className="text-sm text-gray-600 mb-6 flex-1">
-        {project.description}
-      </p>
+      {/* Content */}
+      <div className="p-6 flex-1 flex flex-col">
+        <h3
+          className="text-xl font-bold mb-3"
+          style={{ color: COLORS.darkGreen }}
+        >
+          {project.title}
+        </h3>
 
-      {/* Tech Stack */}
-      {project.tech && project.tech.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-auto">
-          {project.tech.map((tech) => (
-            <span
-              key={tech.id}
-              className="text-[10px] font-bold px-3 py-1 rounded-full border"
-              style={{
-                borderColor: COLORS.darkGreen,
-                color: COLORS.darkGreen,
-              }}
-            >
-              {tech.name}
-            </span>
-          ))}
-        </div>
-      )}
+        <p className="text-sm text-gray-600 mb-6 flex-1">
+          {project.description}
+        </p>
+
+        {/* Tech Stack */}
+        {project.tech && project.tech.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-auto">
+            {project.tech.map((tech) => (
+              <span
+                key={tech.id}
+                className="text-[10px] font-bold px-3 py-1 rounded-full border"
+                style={{
+                  borderColor: COLORS.darkGreen,
+                  color: COLORS.darkGreen,
+                }}
+              >
+                {tech.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
 
 /* ---------------- MAIN ---------------- */
 const ProjectsSection: React.FC = () => {

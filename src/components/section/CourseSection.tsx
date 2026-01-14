@@ -19,6 +19,7 @@ interface Course {
   id: number;
   title: string;
   description: string;
+  courseId:number;
   image: string;
   price: string;
   duration: string;
@@ -196,8 +197,8 @@ const CourseSection: React.FC = () => {
                   course={course}
                   onClick={() => {
                     if (!domainId) return;
-                    setCourseId(course.id);
-                    navigate(`/domain/${domainId}/course/${course.id}`);
+                    setCourseId(course.courseId);
+                    navigate(`/domain/${domainId}/course/${course.courseId}`);
                   }}
                 />
               ))}

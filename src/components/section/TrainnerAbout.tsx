@@ -1,166 +1,77 @@
 /* eslint-disable no-irregular-whitespace */
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { Globe } from "lucide-react";
 import { usePageContext } from "../../context/usePageContext";
-import { safeGet } from "../../util/safeGet";
+import axios from "axios";
 
 /* ---------------- CONFIG ---------------- */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+/* ---------------- COLORS ---------------- */
+const COLORS = {
+  darkGreen: "#01311F",
+  gold: "#B99A49",
+  cream: "#F0ECE3",
+  white: "#FFFFFF",
+};
+
 /* ---------------- TYPES ---------------- */
+interface SocialLink {
+  platform: string;
+  url: string;
+}
+
 interface TrainerAboutData {
   label: string;
   heading: string;
   description1: string;
   description2?: string;
-  mainImages: string[];
-  smallImages: string[];
+  mainImage: string;
+  socialLinks: SocialLink[];
 }
 
 /* ---------------- COMPONENT ---------------- */
-const TrainnerAbout: React.FC = () => {
+const TrainerAbout: React.FC = () => {
   const { domainId, courseId } = usePageContext();
-
   const [data, setData] = useState<TrainerAboutData | null>(null);
-  const [currentMainImageIndex, setCurrentMainImageIndex] = useState(0);
-  const [currentSmallImageIndex, setCurrentSmallImageIndex] = useState(0);
 
-  const SLIDESHOW_INTERVAL = 4000;
-  const TRANSITION_DURATION = 0.8;
-
-  /* ---------------- FETCH TRAINER ABOUT (SAFE) ---------------- */
+  /* ---------------- FETCH ---------------- */
   useEffect(() => {
     let mounted = true;
 
-    const fetchTrainerAbout = async () => {
-      let result = await safeGet<TrainerAboutData>(
-        `${API_BASE_URL}/api/trainer-about`,
-        {
-          domainId: domainId ?? undefined,
-          courseId: courseId ?? undefined,
-        }
-      );
-
-      if (!result) {
-        result = await safeGet<TrainerAboutData>(
-          `${API_BASE_URL}/api/trainer-about`,
-          { domainId: 0, courseId: 0 }
-        );
-      }
-
-      if (mounted && result) {
-        setData({
-          ...result,
-          mainImages: Array.isArray(result.mainImages)
-            ? result.mainImages
-            : [],
-          smallImages: Array.isArray(result.smallImages)
-            ? result.smallImages
-            : [],
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/trainer-about`, {
+          params: {
+            domainId: domainId ?? 0,
+            courseId: courseId ?? 0,
+          },
         });
-        setCurrentMainImageIndex(0);
-        setCurrentSmallImageIndex(0);
+
+        if (mounted) setData(res.data);
+      } catch {
+        setData(null);
       }
     };
 
-    fetchTrainerAbout();
+    fetchData();
     return () => {
       mounted = false;
     };
   }, [domainId, courseId]);
 
-  /* ---------------- SAFE FLAGS ---------------- */
-  const hasMainImages =
-    Array.isArray(data?.mainImages) && data.mainImages.length > 0;
-
-  const hasSmallImages =
-    Array.isArray(data?.smallImages) && data.smallImages.length > 0;
-
-  /* ---------------- SLIDESHOW EFFECTS ---------------- */
-  useEffect(() => {
-    if (!hasMainImages || !data) return;
-
-    const interval = setInterval(() => {
-      setCurrentMainImageIndex(
-        (prev) => (prev + 1) % data.mainImages.length
-      );
-    }, SLIDESHOW_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [hasMainImages, data?.mainImages.length]);
-
-  useEffect(() => {
-    if (!hasSmallImages || !data) return;
-
-    const interval = setInterval(() => {
-      setCurrentSmallImageIndex(
-        (prev) => (prev + 1) % data.smallImages.length
-      );
-    }, SLIDESHOW_INTERVAL + 1000);
-
-    return () => clearInterval(interval);
-  }, [hasSmallImages, data?.smallImages.length]);
-
-  /* ---------------- GUARD ---------------- */
   if (!data) return null;
 
-  const {
-    label,
-    heading,
-    description1,
-    description2,
-    mainImages,
-    smallImages,
-  } = data;
-
   /* ---------------- ANIMATIONS ---------------- */
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.3, delayChildren: 0.2 },
-    },
-  };
-
-  const imageContainerVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.9, x: -50 },
-    visible: { opacity: 1, scale: 1, x: 0, transition: { duration: 0.8 } },
+  const contentVariants: Variants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
   };
 
   const imageVariants: Variants = {
-    initial: { opacity: 0, scale: 1.1 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: TRANSITION_DURATION },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.9,
-      transition: { duration: TRANSITION_DURATION },
-    },
-  };
-
-  const smallImageVariants: Variants = {
-    initial: { opacity: 0, scale: 0.95, rotate: -5 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      rotate: 0,
-      transition: { duration: TRANSITION_DURATION },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.9,
-      rotate: 5,
-      transition: { duration: TRANSITION_DURATION },
-    },
-    hover: { scale: 1.05, rotate: 2, transition: { duration: 0.3 } },
-  };
-
-  const contentVariants: Variants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.8 } },
   };
 
   /* ---------------- UI ---------------- */
@@ -169,85 +80,99 @@ const TrainnerAbout: React.FC = () => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
-      className="w-full bg-white py-20 px-4 md:px-20"
+      className="w-full py-20 px-4 md:px-20"
+      style={{ backgroundColor: COLORS.white }}
     >
-      <motion.div
-        variants={containerVariants}
-        className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center"
-      >
-        {/* LEFT - CONTENT */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+
+        {/* LEFT CONTENT */}
         <motion.div variants={contentVariants}>
           <div className="flex items-center gap-3 mb-4">
-            <span className="h-[2px] w-10 bg-[#B99A49]" />
+            <span className="h-[2px] w-10" style={{ background: COLORS.gold }} />
             <span className="text-sm uppercase tracking-wider text-gray-500">
-              {label}
+              {data.label}
             </span>
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-bold text-[#01311F] mb-6 leading-snug">
-            {heading}
+          <h2
+            className="text-3xl md:text-4xl font-bold mb-6 leading-snug"
+            style={{ color: COLORS.darkGreen }}
+          >
+            {data.heading}
           </h2>
 
-          <p className="text-gray-600 mb-4">{description1}</p>
-          {description2 && <p className="text-gray-600">{description2}</p>}
+          <p className="text-gray-600 mb-4">{data.description1}</p>
+          {data.description2 && (
+            <p className="text-gray-600 mb-6">{data.description2}</p>
+          )}
+
+          {/* SOCIAL / WEBSITE LINK */}
+{data.socialLinks?.length > 0 && (
+  <div className="flex gap-4 mt-6">
+    {data.socialLinks.map((link, i) => (
+      <div key={i} className="relative group">
+        {/* ICON */}
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-11 h-11 rounded-full flex items-center justify-center shadow-md transition hover:scale-110"
+          style={{
+            backgroundColor: COLORS.gold,
+            color: COLORS.darkGreen,
+          }}
+        >
+          <Globe size={20} />
+        </a>
+
+        {/* HOVER PLACEHOLDER / TOOLTIP */}
+        <div
+          className="absolute -top-10 left-1/2 -translate-x-1/2 
+                     whitespace-nowrap px-3 py-1 rounded-md text-xs font-semibold
+                     opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100
+                     transition-all duration-200 pointer-events-none shadow-lg"
+          style={{
+            backgroundColor: COLORS.darkGreen,
+            color: COLORS.gold,
+          }}
+        >
+          {link.platform
+            ? link.platform.charAt(0).toUpperCase() + link.platform.slice(1)
+            : "Website"}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
         </motion.div>
 
-        {/* RIGHT - IMAGES */}
-        <div className="relative flex justify-center md:justify-start">
-          {/* MAIN IMAGE */}
-          <motion.div
-            variants={imageContainerVariants}
-            className="rounded-2xl overflow-hidden shadow-lg w-full h-[500px] md:h-[600px] relative"
-          >
-            {hasMainImages ? (
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={currentMainImageIndex}
-                  src={`${API_BASE_URL}${mainImages[currentMainImageIndex]}`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  variants={imageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                />
-              </AnimatePresence>
-            ) : (
-            ): (
-                <motion.img
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop"
-            className="absolute inset-0 w-full h-full object-cover"
-            variants={imageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-                />
-            )}
-          </motion.div>
+        {/* RIGHT IMAGE */}
+        <motion.div
+          variants={imageVariants}
+          className="relative rounded-2xl overflow-hidden shadow-xl"
+        >
+          <img
+            src={`${API_BASE_URL}${data.mainImage}`}
+            alt="Trainer"
+            className="w-full h-[450px] md:h-[550px] object-cover"
+          />
 
-          {/* SMALL IMAGE */}
-          {hasSmallImages && (
-            <motion.div
-              variants={smallImageVariants}
-              whileHover="hover"
-              className="absolute bottom-[-50px] right-[-50px] z-10 rounded-xl overflow-hidden shadow-lg w-[120px] h-[100px] md:w-[200px] md:h-[150px] hidden md:block"
-            >
-              <AnimatePresence mode="wait">
-                <motion.img
-                  key={currentSmallImageIndex}
-                  src={`${API_BASE_URL}${smallImages[currentSmallImageIndex]}`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  variants={smallImageVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                />
-              </AnimatePresence>
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
+          {/* VERIFIED BADGE */}
+          <div
+            className="absolute bottom-6 right-6 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg"
+            style={{
+              backgroundColor: COLORS.darkGreen,
+              color: COLORS.gold,
+            }}
+          >
+            <Globe size={16} />
+            Official Profile
+          </div>
+        </motion.div>
+      </div>
     </motion.section>
   );
 };
 
-export default TrainnerAbout;
+export default TrainerAbout;
