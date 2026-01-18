@@ -10,18 +10,18 @@ const Navbar = () => {
 
   /* ---------------- FETCH NOTICES ---------------- */
 
-useEffect(() => {
-  axios
-    .get(`${API_BASE_URL}/api/notices`)
-    .then(res => {
-      if (Array.isArray(res.data)) {
-        setNotices(res.data.filter((n): n is string => typeof n === "string"));
-      } else {
-        setNotices([]);
-      }
-    })
-    .catch(() => setNotices([]));
-}, []);
+  useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/api/notices`)
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          setNotices(res.data.filter((n): n is string => typeof n === "string"));
+        } else {
+          setNotices([]);
+        }
+      })
+      .catch(() => setNotices([]));
+  }, []);
 
   const marqueeText =
     notices.length > 0

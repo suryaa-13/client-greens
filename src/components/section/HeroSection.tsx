@@ -138,7 +138,7 @@ const HeroSection: React.FC = () => {
             {/* 4. DYNAMIC BUTTON GRID */}
             <div className="flex flex-wrap gap-4">
               {isLandingPage && (
-                <div className="relative flex items-center justify-center h-20 w-20">
+                <div className="relative flex items-center justify-center h-20 w-20 mt-10">
                   {/* EXPLORE BUTTON */}
                   <motion.button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}

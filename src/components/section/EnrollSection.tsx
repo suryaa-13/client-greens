@@ -195,7 +195,6 @@ const EnrollSection: React.FC = () => {
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              whileInView={{ opacity: 1, y: 0 }}
               className="text-2xl md:text-3xl lg:text-4xl font-black text-[#F0ECE3]"
             >
               Start Your <span className="text-[#B99A49]">Journey.</span>
