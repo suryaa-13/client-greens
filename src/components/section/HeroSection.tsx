@@ -33,17 +33,35 @@ const HeroSection: React.FC = () => {
   const parsedCourseId = courseId ? Number(courseId) : undefined;
 
 
-  useEffect(() => {
-    let mounted = true;
-    const fetchHero = async () => {
-      setLoading(true);
-      let data = await safeGet<any>(`${API_BASE_URL}/api/hero`, { domainId: parsedDomainId, courseId: parsedCourseId });
-      if (!data) data = await safeGet<any>(`${API_BASE_URL}/api/hero`, { domainId: 0, courseId: 0 });
-      if (mounted) { setHeroData(data); setLoading(false); }
-    };
-    fetchHero();
-    return () => { mounted = false; };
-  }, [parsedDomainId, parsedCourseId]);
+useEffect(() => {
+  let mounted = true;
+
+  const fetchHero = async () => {
+    setLoading(true);
+
+    const data =
+      (await safeGet<any>(`${API_BASE_URL}/api/hero`, {
+        domainId: parsedDomainId ?? 0,
+        courseId: parsedCourseId ?? 0,
+      })) ??
+      (await safeGet<any>(`${API_BASE_URL}/api/hero`, {
+        domainId: 0,
+        courseId: 0,
+      }));
+
+    if (mounted) {
+      setHeroData(data);
+      setLoading(false);
+    }
+  };
+
+  fetchHero();
+
+  return () => {
+    mounted = false;
+  };
+}, [parsedDomainId, parsedCourseId]);
+
 console.log("hero",heroData);
 
   // useEffect(() => {

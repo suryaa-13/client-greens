@@ -16,7 +16,8 @@ import AboutSection from "../../components/section/AboutSection";
 import ContactSection from "../../components/section/ContactSection";
 import ModulesSection from "../../components/section/ModulesSection";
 import YoutubeSection from "../../components/section/YouTubePlaylistSection";
-
+import Youtubeshort from "../../components/section/YoutubeShortSection"
+import TrainerAbout from "../../components/section/TrainnerAbout";
 const Course: React.FC = () => {
   const navigate = useNavigate();
   const { domainId: domainIdFromUrl, courseId: courseIdFromUrl } = useParams();
@@ -76,7 +77,9 @@ const Course: React.FC = () => {
         <ProjectsSection />
         <TrustedCompaniesSection />
         <CertificateSection />
+        <TrainerAbout />
         <TestimonialsSection />
+        <Youtubeshort/> 
          <YoutubeSection />
         <AboutSection />
         <ContactSection />

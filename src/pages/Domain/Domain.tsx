@@ -16,7 +16,8 @@ import ContactSection from "../../components/section/ContactSection";
 import CourseSection from "../../components/section/CourseSection";
 import MaterialDownloadSection from "../../components/section/MaterialDownloadSection";
 import YoutubeSection from "../../components/section/YouTubePlaylistSection";
-
+import TrainerAbout from "../../components/section/TrainnerAbout";
+import Youtubeshort from "../../components/section/YoutubeShortSection"
 const Domain: React.FC = () => {
   const { domainId: domainIdFromUrl } = useParams();
   const navigate = useNavigate();
@@ -55,10 +56,12 @@ const Domain: React.FC = () => {
         <TechStackSection />
         <ProjectsSection />
         <TrustedCompaniesSection />
+        <TrainerAbout />
         <CertificateSection />
         <TestimonialsSection />
         <MaterialDownloadSection />  
         <YoutubeSection/>  
+            <Youtubeshort/> 
         <EnrollSection />
         <ContactSection />
       </main>

@@ -5,10 +5,10 @@ import { usePageContext } from "../../context/usePageContext";
 import {
   FiFileText,
   FiBookOpen,
-  FiFilm,
   FiFolder,
   FiEye,
   FiX,
+  FiExternalLink,
 } from "react-icons/fi";
 
 /* ---------------- CONFIG ---------------- */
@@ -24,33 +24,25 @@ interface Material {
   id: number;
   fileName: string;
   description: string;
-  fileType: "PDF" | "DOCX" | "VIDEO" | "PRESENTATION" ;
+  fileType: "PDF" | "DOCX" | "PRESENTATION";
   highlight: string;
   filePath: string;
   imageUrl?: string | null;
 }
 
-/* ---------------- ICON ---------------- */
+/* ---------------- ICON HELPER ---------------- */
 const getIcon = (type: Material["fileType"], large = false) => {
   const cls = large ? "text-4xl opacity-90" : "text-xl";
   switch (type) {
-    case "PDF":
-      return <FiFileText className={cls} />;
-    case "DOCX":
-      return <FiBookOpen className={cls} />;
-    case "VIDEO":
-      return <FiFilm className={cls} />;
-    case "PRESENTATION":
-      return <FiFolder className={cls} />;
-    default:
-      return <FiFileText className={cls} />;
+    case "PDF": return <FiFileText className={cls} />;
+    case "DOCX": return <FiBookOpen className={cls} />;
+    case "PRESENTATION": return <FiFolder className={cls} />;
+    default: return <FiFileText className={cls} />;
   }
 };
 
-/* ---------------- COMPONENT ---------------- */
 const StudyMaterialSection: React.FC = () => {
   const { domainId, courseId } = usePageContext();
-
   const [materials, setMaterials] = useState<Material[]>([]);
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Material | null>(null);
@@ -58,10 +50,9 @@ const StudyMaterialSection: React.FC = () => {
 
   const ITEMS_PER_PAGE = 3;
 
-  /* ---------------- FETCH ---------------- */
+  /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
     setLoading(true);
-
     axios
       .get(`${API_BASE_URL}/api/materials`, {
         params: {
@@ -76,91 +67,71 @@ const StudyMaterialSection: React.FC = () => {
       .catch(() => setMaterials([]))
       .finally(() => setLoading(false));
   }, [domainId, courseId]);
+console.log("metarial",materials);
 
-  /* ---------------- UI STATES ---------------- */
-  if (loading) {
-    return (
-      <div className="py-20 text-center text-white">
-        Loading Study Materials...
-      </div>
-    );
-  }
+  /* ---------------- PREVIEW LOGIC ---------------- */
+  const handleMaterialClick = (m: Material) => {
+    const fileUrl = `${API_BASE_URL}${m.filePath}`;
 
+    // PDF and VIDEO can be previewed in our modal
+    if (m.fileType === "PDF") {
+      setSelected(m);
+    } else {
+      // DOCX and PRESENTATION are opened in a new tab
+      // This allows the browser to handle the file (download or open in Office Online)
+      window.open(fileUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  if (loading) return <div className="py-20 text-center text-white">Loading Study Materials...</div>;
   if (!materials.length) return null;
 
   const totalPages = Math.ceil(materials.length / ITEMS_PER_PAGE);
-  const visible = materials.slice(
-    page * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
-  );
+  const visible = materials.slice(page * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE + ITEMS_PER_PAGE);
 
   return (
     <>
-      {/* ================= SECTION ================= */}
-      <section
-        className="py-24 px-6"
-        style={{ background: COLORS.darkGreen }}
-      >
+      <section className="py-24 px-6" style={{ background: COLORS.darkGreen }}>
         <div className="max-w-7xl mx-auto">
-          {/* HEADER */}
-           <h2 className="text-4xl text-center text-[#F0ECE3] mb-12 font-bold">
-        Resource<span className="text-[#B99A49]">.</span>Library
-      </h2>
+          <h2 className="text-4xl text-center text-[#F0ECE3] mb-12 font-bold">
+            Resource<span className="text-[#B99A49]">.</span>Library
+          </h2>
 
-          {/* CARDS */}
           <div className="grid md:grid-cols-3 gap-8">
             {visible.map((m) => (
               <motion.div
                 key={m.id}
                 whileHover={{ scale: 1.05 }}
-                onClick={() => setSelected(m)}
-                className="cursor-pointer rounded-2xl overflow-hidden shadow-2xl bg-black"
+                onClick={() => handleMaterialClick(m)}
+                className="cursor-pointer rounded-2xl overflow-hidden shadow-2xl bg-black flex flex-col h-full"
               >
-                {/* THUMBNAIL */}
-                {m.imageUrl ? (
-                  <img
-                    src={`${API_BASE_URL}${m.imageUrl}`}
-                    alt={m.fileName}
-                    className="w-full h-[350px] object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-[350px] flex items-center justify-center bg-black text-white">
-                    {getIcon(m.fileType, true)}
-                  </div>
-                )}
+                <div className="relative h-[250px] w-full bg-gray-900">
+                  {m.imageUrl ? (
+                    <img src={`${API_BASE_URL}${m.imageUrl}`} alt={m.fileName} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                      {getIcon(m.fileType, true)}
+                    </div>
+                  )}
+                </div>
 
-                {/* OVERLAY */}
-                <div className="p-4 bg-black/80">
-                  <div className="flex justify-between items-center mb-2">
-                    <span
-                      className="text-xs font-bold px-3 py-1 rounded-full"
-                      style={{
-                        background: COLORS.gold,
-                        color: COLORS.darkGreen,
-                      }}
-                    >
+                <div className="p-6 bg-black/90 flex-grow">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full bg-[#B99A49] text-[#01311F]">
                       {m.highlight}
                     </span>
-
-                    <span className="text-white">
-                      {getIcon(m.fileType)}
-                    </span>
+                    <span className="text-white/50">{getIcon(m.fileType)}</span>
                   </div>
 
-                  <h3 className="text-white font-bold">
-                    {m.fileName}
-                  </h3>
+                  <h3 className="text-white font-bold text-lg mb-2 truncate">{m.fileName}</h3>
+                  <p className="text-white/60 text-sm line-clamp-2 mb-4">{m.description}</p>
 
-                  <p className="text-white/80 text-sm mt-2 line-clamp-2">
-                    {m.description}
-                  </p>
-
-                  <div
-                    className="mt-4 flex items-center gap-2 font-bold"
-                    style={{ color: COLORS.gold }}
-                  >
-                    <FiEye />
-                    Preview
+                  <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider" style={{ color: COLORS.gold }}>
+                    {m.fileType === "PDF" ? (
+                      <><FiEye /> Preview Now</>
+                    ) : (
+                      <><FiExternalLink /> Open Material</>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -169,84 +140,61 @@ const StudyMaterialSection: React.FC = () => {
 
           {/* PAGINATION */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-6 mt-14">
-              <button
-                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+            <div className="flex justify-center gap-4 mt-12">
+              <button 
+                onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="px-6 py-2 rounded-full font-bold disabled:opacity-40"
-                style={{
-                  background: COLORS.gold,
-                  color: COLORS.darkGreen,
-                }}
-              >
-                Prev
-              </button>
-
-              <button
-                onClick={() =>
-                  setPage((p) => Math.min(p + 1, totalPages - 1))
-                }
+                className="px-6 py-2 rounded-xl font-bold bg-[#B99A49] text-[#01311F] disabled:opacity-30"
+              >Prev</button>
+              <button 
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
-                className="px-6 py-2 rounded-full font-bold disabled:opacity-40"
-                style={{
-                  background: COLORS.gold,
-                  color: COLORS.darkGreen,
-                }}
-              >
-                Next
-              </button>
+                className="px-6 py-2 rounded-xl font-bold bg-[#B99A49] text-[#01311F] disabled:opacity-30"
+              >Next</button>
             </div>
           )}
         </div>
       </section>
 
       {/* ================= PREVIEW MODAL ================= */}
-      <AnimatePresence>
-        {selected && (
-          <motion.div
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+<AnimatePresence>
+  {selected && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
+      onClick={() => setSelected(null)}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative w-full max-w-6xl h-full max-h-[90vh] bg-[#0a0a0a] rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-white/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* MODAL HEADER */}
+        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black">
+          <div className="flex items-center gap-3">
+            <span style={{ color: COLORS.gold }}>{getIcon(selected.fileType)}</span>
+            <span className="text-white font-medium truncate max-w-[200px] md:max-w-md">
+              {selected.fileName}
+            </span>
+          </div>
+          <button 
             onClick={() => setSelected(null)}
+            className="p-2 hover:bg-white/10 rounded-full text-white transition-colors"
           >
-            <motion.div
-              onClick={(e) => e.stopPropagation()}
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative w-full max-w-5xl h-[85vh] bg-black rounded-xl overflow-hidden"
-            >
-              {/* CLOSE */}
-              <button
-                onClick={() => setSelected(null)}
-                className="absolute top-4 right-4 z-10 text-white"
-              >
-                <FiX size={22} />
-              </button>
+            <FiX size={24} />
+          </button>
+        </div>
 
-              {/* CONTENT */}
-              {selected.fileType === "VIDEO" ? (
-                <video
-                  src={`${API_BASE_URL}${selected.filePath}`}
-                  controls
-                  className="w-full h-full"
-                />
-              ) : (
-                <iframe
-                  src={`${API_BASE_URL}${selected.filePath}`}
-                  className="w-full h-full"
-                  title="Study Material Preview"
-                />
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </>
   );
 };
 
 export default StudyMaterialSection;
-
-
